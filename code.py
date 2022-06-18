@@ -1,24 +1,33 @@
-from sqlalchemy import create_engine, inspect
+from sqlalchemy import create_engine
 import pandas as pd
+from multiprocessing import Pool, cpu_count
+import json
 import os
 
-DB_URL = "ensembldb.ensembl.org:3306"
-DB_NAME = "homo_sapiens_core_106_38"
-DB_USER = "anonymous"
+data = json.load(open('map.json'))
 
-db_connection_str = 'mysql+pymysql://anonymous@ensembldb.ensembl.org:3306/homo_sapiens_core_106_38'
-engine = create_engine(db_connection_str)
-inspector = inspect(engine)
+for elem in data:
+    if (elem["location"] == "local"):
+        pass
+    else:
+        db_connection_str = f'mysql+pymysql://{elem["DB_USER"]}@{elem["location"]}:{elem["port"]}/{elem["species"]}'
+        engine = create_engine(db_connection_str)
 
-tables = inspector.get_table_names()
+        queryVars = {}
+        for i in elem["data"]["vars"]:
+            queryVars[i["key"]] = pd.read_sql(i["query"], con=engine)[i["key"]].item()
 
-# for table in tables:
-#     df = pd.read_sql(f'select * FROM {table}', con=engine)
+        for table in elem["data"]["tables"]:
+            query = table["query"]
+            for queryVar in queryVars:
+                if ("{"+queryVar+"}" in query): query = query.replace("{"+queryVar+"}", str(queryVars[queryVar]))
+            df = pd.read_sql(query, con=engine)
 
-df = pd.read_sql(f'select * FROM {tables[0]}', con=engine)
+            # re-assign column names if duplicate column names exist
+            if ("columns" in table.keys()): df.columns = table["columns"].split(", ")
 
-if not os.path.exists(f'parquet{os.sep}{DB_NAME}'):
-    os.mkdir(f'parquet{os.sep}{DB_NAME}')
+            if not os.path.exists(f'parquet{os.sep}{elem["species"]}'):
+                os.mkdir(f'parquet{os.sep}{elem["species"]}')
 
-# engine: pyarrow
-df.to_parquet(f'parquet{os.sep}{DB_NAME}{os.sep}{tables[0]}.parquet')
+            # engine: pyarrow
+            df.to_parquet(f'parquet{os.sep}{elem["species"]}{os.sep}{table["table"]}.parquet')
