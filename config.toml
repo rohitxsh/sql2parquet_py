@@ -1,0 +1,23 @@
+[[config]]
+species = "homo_sapiens_core_106_38"
+location = "ensembldb.ensembl.org"
+port = "3306"
+DB_USER = "anonymous"
+[[config.data.vars]]
+key = "species_id"
+query = "select *  FROM meta where meta_key = 'species.production_name';"
+[[config.data.tables]]
+table = "gene"
+query = '''
+SELECT g.gene_id, g.stable_id, g.version, sr.name, g.seq_region_start, g.seq_region_end, g.biotype, x.dbprimary_acc, x.display_label, t.stable_id, t.version, t.seq_region_start, t.seq_region_end, t.biotype, tr.stable_id, tr.version
+FROM gene g
+JOIN seq_region sr on (g.seq_region_id = sr.seq_region_id)
+JOIN coord_system cs on (sr.coord_system_id = cs.coord_system_id)
+JOIN xref x on (g.display_xref_id = x.xref_id)
+JOIN transcript t on (g.gene_id = t.gene_id)
+JOIN translation tr on (t.transcript_id = tr.transcript_id)
+WHERE x.display_label = 'BRCA2'
+AND cs.species_id = 1
+AND g.biotype <> 'LRG_gene';
+'''
+columns = "gene.gene_id, gene.stable_id, gene.version, sr.name, gene.seq_region_start, gene.seq_region_end, gene.biotype, xref.dbprimary_acc, xref.display_label, transcript.stable_id, transcript.version, transcript.seq_region_start, transcript.seq_region_end, transcript.biotype, translation.stable_id, translation.version"

@@ -1,12 +1,11 @@
 from sqlalchemy import create_engine
 import pandas as pd
-from multiprocessing import Pool, cpu_count
-import json
+import toml
 import os
 
-data = json.load(open('map.json'))
+config = toml.load(open('config.toml'))["config"]
 
-for elem in data:
+for elem in config:
     if (elem["location"] == "local"):
         pass
     else:
