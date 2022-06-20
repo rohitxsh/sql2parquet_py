@@ -5,6 +5,8 @@ import os
 
 config = toml.load(open('config.toml'))["config"]
 
+if not os.path.exists('parquet'): os.mkdir('parquet')
+
 for elem in config:
     if (elem["location"] == "local"):
         pass
