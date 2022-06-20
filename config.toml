@@ -3,21 +3,19 @@ species = "homo_sapiens_core_106_38"
 location = "ensembldb.ensembl.org"
 port = "3306"
 DB_USER = "anonymous"
-[[config.data.vars]]
-key = "species_id"
-query = "select *  FROM meta where meta_key = 'species.production_name';"
 [[config.data.tables]]
 table = "gene"
 query = '''
-SELECT g.gene_id, g.stable_id, g.version, sr.name, g.seq_region_start, g.seq_region_end, g.biotype, x.dbprimary_acc, x.display_label, t.stable_id, t.version, t.seq_region_start, t.seq_region_end, t.biotype, tr.stable_id, tr.version
+SELECT distinct g.gene_id, g.stable_id, g.version, sr.name, g.seq_region_start, g.seq_region_end, g.biotype, x.dbprimary_acc, x.display_label, ct.stable_id, ct.version, ct.biotype
 FROM gene g
-JOIN seq_region sr on (g.seq_region_id = sr.seq_region_id)
-JOIN coord_system cs on (sr.coord_system_id = cs.coord_system_id)
+JOIN seq_region sr using (seq_region_id)
+JOIN coord_system cs using (coord_system_id)
 JOIN xref x on (g.display_xref_id = x.xref_id)
-JOIN transcript t on (g.gene_id = t.gene_id)
-JOIN translation tr on (t.transcript_id = tr.transcript_id)
-WHERE x.display_label = 'BRCA2'
-AND cs.species_id = 1
-AND g.biotype <> 'LRG_gene';
+JOIN gene_attrib ga on (g.gene_id = ga.gene_id)
+JOIN transcript ct on (g.canonical_transcript_id = ct.transcript_id)
+JOIN meta m on (cs.species_id = m.species_id and m.meta_key = "species.production_name")
+WHERE g.biotype <> "LRG_gene"
+AND m.meta_value = %s
 '''
-columns = "gene.gene_id, gene.stable_id, gene.version, sr.name, gene.seq_region_start, gene.seq_region_end, gene.biotype, xref.dbprimary_acc, xref.display_label, transcript.stable_id, transcript.version, transcript.seq_region_start, transcript.seq_region_end, transcript.biotype, translation.stable_id, translation.version"
+columns = "gene.gene_id, gene.stable_id, gene.version, seq_region.name, gene.seq_region_start, gene.seq_region_end, gene.biotype, xref.dbprimary_acc, xref.display_label, transcript.stable_id, transcript.version, transcript.biotype"
+vars = ["homo_sapiens"]
