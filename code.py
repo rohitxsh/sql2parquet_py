@@ -19,10 +19,8 @@ for elem in config:
 
         for table in elem["data"]["tables"]:
             query = table["query"]
-            df = pd.read_sql(query, con=engine, params= [table["vars"]])
-
-            # re-assign column names if duplicate column names exist
-            if ("columns" in table.keys()): df.columns = table["columns"].split(", ")
+            print(table["vars"])
+            df = pd.read_sql(query, con=engine, params=table["vars"])
 
             if not os.path.exists(f'parquet{os.sep}{elem["species"]}'):
                 os.mkdir(f'parquet{os.sep}{elem["species"]}')
