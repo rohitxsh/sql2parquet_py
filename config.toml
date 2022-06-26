@@ -15,7 +15,7 @@ SELECT distinct g.gene_id as gene_id, g.stable_id as gene_stable_id, g.version a
 FROM gene g
 JOIN seq_region sr using (seq_region_id)
 JOIN coord_system cs using (coord_system_id)
-JOIN xref x on (g.display_xref_id = x.xref_id)
+LEFT JOIN xref x on (g.display_xref_id = x.xref_id)
 JOIN gene_attrib ga on (g.gene_id = ga.gene_id)
 JOIN transcript ct on (g.canonical_transcript_id = ct.transcript_id)
 JOIN meta m on (cs.species_id = m.species_id and m.meta_key = "species.production_name")
