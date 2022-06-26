@@ -1,10 +1,15 @@
+boto3==1.24.15
+botocore==1.27.15
 greenlet==1.1.2
+jmespath==1.0.1
 numpy==1.22.4
 pandas==1.4.2
 pyarrow==8.0.0
 PyMySQL==1.0.2
 python-dateutil==2.8.2
 pytz==2022.1
+s3transfer==0.6.0
 six==1.16.0
 SQLAlchemy==1.4.37
 toml==0.10.2
+urllib3==1.26.9
