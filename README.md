@@ -19,5 +19,5 @@ milti-line string, SQL query to construct the table, variables can we used that 
 '''
 ```
 
-Supported DB: MySQL
+Supported DB: MySQL  
 Engine: PyMySQL
