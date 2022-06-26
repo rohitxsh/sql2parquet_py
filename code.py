@@ -1,24 +1,36 @@
+from pathlib import Path
 from sqlalchemy import create_engine
 from time import time
 import pandas as pd
-import toml
-import os
+import os, glob, toml
 
-start = time()
+def sqlToParuet():
+    config = toml.load(open('config.toml'))
 
-config = toml.load(open('config.toml'))["config"]
+    if not os.path.exists('parquet'): os.mkdir('parquet')
 
-if not os.path.exists('parquet'): os.mkdir('parquet')
+    for database in config['databases']:
+        for species in database['species']:
 
-for elem in config:
-    db_connection_str = f'mysql+pymysql://{elem["DB_USER"]}@{elem["location"]}:{elem["port"]}/{elem["species"]}'
-    engine = create_engine(db_connection_str)
-    for table in elem["data"]["tables"]:
-        query = table["query"]
-        df = pd.read_sql(query, con=engine, params=table["vars"])
-        if not os.path.exists(f'parquet{os.sep}{elem["species"]}'):
-            os.mkdir(f'parquet{os.sep}{elem["species"]}')
-        # engine: pyarrow
-        df.to_parquet(f'parquet{os.sep}{elem["species"]}{os.sep}{table["table"]}.parquet')
+            db_connection_str = f'mysql+pymysql://{database["DB_USER"]}@{database["location"]}:{database["port"]}/{species["DB_name"]}'
+            engine = create_engine(db_connection_str)
 
-print(f'It took {time()-start} secs.')
+            for table in database['tables']:
+                df = pd.read_sql(table['query'], con=engine, params={'species_name': species['species_name']})
+
+                directory = f'parquet{os.sep}data={table["table_name"]}{os.sep}species={species["species_name"]}'
+                if not os.path.exists('parquet'): os.mkdir('parquet')
+                if not os.path.exists(f'parquet{os.sep}data={table["table_name"]}'): os.mkdir(f'parquet{os.sep}data={table["table_name"]}')
+                if not os.path.exists(directory): os.mkdir(directory)
+
+                # default engine: pyarrow
+                df.to_parquet(f'{directory}{os.sep}{species["DB_name"]}-{table["table_name"]}.parquet')
+
+if __name__ == '__main__':
+    start = time()
+
+    sqlToParuet()
+
+    print(f'It took {time()-start} secs.')
+
+

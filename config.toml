@@ -1,18 +1,15 @@
-[[config]]
-[[config.database.ensembl]]
+[[databases]]
 location = "ensembldb.ensembl.org"
 port="3306"
 DB_USER="anonymous"
-[[config.data.species.human]]
-dbname="homo_sapiens_core_106_38"
-species="homo_sapiens"
-database="ensembl"
-[[config.data.species.mouse]]
-dbname="mus_musculus_core_106_39"
-species="mus_musculus"
-database="ensembl"
-[[config.data.tables]]
-table = "gene"
+[[databases.species]]
+DB_name="homo_sapiens_core_106_38"
+species_name="homo_sapiens"
+[[databases.species]]
+DB_name="mus_musculus_core_106_39"
+species_name="mus_musculus"
+[[databases.tables]]
+table_name = "gene"
 query = '''
 SELECT distinct g.gene_id as gene_id, g.stable_id as gene_stable_id, g.version as gene_stable_id_version, sr.name as chr, g.seq_region_start as gene_start, g.seq_region_end as gene_end, g.biotype as gene_biotype, x.dbprimary_acc as gene_symbol_id, x.display_label as gene_symbol, ct.stable_id as canonical_transcript_stable_id, ct.version as canonical_transcript_stable_id_version, ct.biotype as canonical_transcript_biotype
 FROM gene g
