@@ -4,7 +4,7 @@ from time import time
 import pandas as pd
 import os, glob, toml
 
-def sqlToParuet():
+def sqlToParquet():
     config = toml.load(open('config.toml'))
 
     if not os.path.exists('parquet'): os.mkdir('parquet')
@@ -18,9 +18,10 @@ def sqlToParuet():
             for table in database['tables']:
                 df = pd.read_sql(table['query'], con=engine, params={'species_name': species['species_name']})
 
-                directory = f'parquet{os.sep}data={table["table_name"]}{os.sep}species={species["species_name"]}'
                 if not os.path.exists('parquet'): os.mkdir('parquet')
                 if not os.path.exists(f'parquet{os.sep}data={table["table_name"]}'): os.mkdir(f'parquet{os.sep}data={table["table_name"]}')
+
+                directory = f'parquet{os.sep}data={table["table_name"]}{os.sep}species={species["species_name"]}'
                 if not os.path.exists(directory): os.mkdir(directory)
 
                 # default engine: pyarrow
@@ -29,7 +30,7 @@ def sqlToParuet():
 if __name__ == '__main__':
     start = time()
 
-    sqlToParuet()
+    sqlToParquet()
 
     print(f'It took {time()-start} secs.')
 
