@@ -1,18 +1,37 @@
-from pathlib import Path
 from sqlalchemy import create_engine
 from time import time
 import pandas as pd
-import os, glob, toml
+import os, toml
 
-def sqlToParquet():
-    config = toml.load(open('config.toml'))
+def read_config(config_file):
+    """Read TOML file
 
+    Read TOML file containing the DB info
+
+    Args:
+        config_file (str): TOML configuration file name
+
+    Returns:
+        Dictionary containing the parsed data.
+
+    Raises:
+        FileNotFoundError: If `config_file` doesn't exist.
+    """
+
+    try:
+        return toml.load(open(config_file))
+    except FileNotFoundError:
+        print(f'"{config_file}" file does not exist!')
+    except Exception as e:
+        print(e)
+
+def sqlToParquet(config):
     if not os.path.exists('parquet'): os.mkdir('parquet')
 
     for database in config['databases']:
         for species in database['species']:
 
-            db_connection_str = f'mysql+pymysql://{database["DB_USER"]}@{database["location"]}:{database["port"]}/{species["DB_name"]}'
+            db_connection_str = f'mysql+pymysql://{database["db_user"]}@{database["location"]}:{database["port"]}/{species["db_name"]}'
             engine = create_engine(db_connection_str)
 
             for table in database['tables']:
@@ -25,12 +44,13 @@ def sqlToParquet():
                 if not os.path.exists(directory): os.mkdir(directory)
 
                 # default engine: pyarrow
-                df.to_parquet(f'{directory}{os.sep}{species["DB_name"]}-{table["table_name"]}.parquet')
+                df.to_parquet(f'{directory}{os.sep}{species["db_name"]}-{table["table_name"]}.parquet')
 
 if __name__ == '__main__':
     start = time()
 
-    sqlToParquet()
+    config = read_config('config.toml')
+    sqlToParquet(config)
 
     print(f'It took {time()-start} secs.')
 

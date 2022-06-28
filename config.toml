@@ -1,12 +1,12 @@
 [[databases]]
 location = "ensembldb.ensembl.org"
 port="3306"
-DB_USER="anonymous"
+db_user="anonymous"
 [[databases.species]]
-DB_name="homo_sapiens_core_106_38"
+db_name="homo_sapiens_core_106_38"
 species_name="homo_sapiens"
 [[databases.species]]
-DB_name="mus_musculus_core_106_39"
+db_name="mus_musculus_core_106_39"
 species_name="mus_musculus"
 [[databases.tables]]
 table_name = "gene"
