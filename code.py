@@ -1,32 +1,46 @@
+from botocore.exceptions import ClientError
+from pathlib import Path, PureWindowsPath, PurePosixPath
 from sqlalchemy import create_engine
 from time import time
+from typing import Dict
 import pandas as pd
-import os, toml
+import boto3, glob, os, toml
 
-def read_config(config_file):
-    """Read TOML file
+CONFIG_FILE_NAME = 'config.toml'
+OUTPUT_DIRECTORY = 'parquet'
+FILE_EXT = '.parquet'
+AWS_S3_BUCKET = 'ensembl-genome-data-parquet'
 
+def read_config(config_file_name: str) -> Dict[str, str]:
+    '''
     Read TOML file containing the DB info
 
     Args:
-        config_file (str): TOML configuration file name
+        config_file: TOML configuration file name
 
     Returns:
-        Dictionary containing the parsed data.
+        Dictionary containing the parsed data
 
     Raises:
-        FileNotFoundError: If `config_file` doesn't exist.
-    """
+        FileNotFoundError: If `config_file` doesn't exist
+    '''
 
     try:
-        return toml.load(open(config_file))
+        return toml.load(open(config_file_name))
     except FileNotFoundError:
-        print(f'"{config_file}" file does not exist!')
+        print(f'"{config_file_name}" file doesn\'t exist!')
     except Exception as e:
         print(e)
 
-def sqlToParquet(config):
-    if not os.path.exists('parquet'): os.mkdir('parquet')
+def sqlToParquet(config: Dict[str, str]) -> None:
+    '''
+    Read tables from remote SQL server and exports the data as parquet files to OUTPUT_DIRECTORY
+
+    Args:
+        config: Dictionary config object
+    '''
+
+    if not os.path.exists(OUTPUT_DIRECTORY): os.mkdir(OUTPUT_DIRECTORY)
 
     for database in config['databases']:
         for species in database['species']:
@@ -37,21 +51,53 @@ def sqlToParquet(config):
             for table in database['tables']:
                 df = pd.read_sql(table['query'], con=engine, params={'species_name': species['species_name']})
 
-                if not os.path.exists('parquet'): os.mkdir('parquet')
                 if not os.path.exists(f'parquet{os.sep}data={table["table_name"]}'): os.mkdir(f'parquet{os.sep}data={table["table_name"]}')
 
-                directory = f'parquet{os.sep}data={table["table_name"]}{os.sep}species={species["species_name"]}'
-                if not os.path.exists(directory): os.mkdir(directory)
+                full_directory_path = f'parquet{os.sep}data={table["table_name"]}{os.sep}species={species["species_name"]}'
+                if not os.path.exists(full_directory_path): os.mkdir(full_directory_path)
 
                 # default engine: pyarrow
-                df.to_parquet(f'{directory}{os.sep}{species["db_name"]}-{table["table_name"]}.parquet')
+                df.to_parquet(f'{full_directory_path}{os.sep}{species["db_name"]}-{table["table_name"]}{FILE_EXT}')
+
+def uploadDirToS3() -> None:
+    '''
+    Uploads all parquet files in OUTPUT_DIRECTORY to AWS_S3_BUCKET
+
+    Raises:
+        ClientError: If boto3 faces any errors while uploading the parquet files
+    '''
+
+    s3_client = boto3.client('s3')
+
+    for dir in list(Path(OUTPUT_DIRECTORY).glob('**')):
+        files = glob.glob(os.path.join(dir, f'*{FILE_EXT}'))
+
+        # skip the iteration if no parquet files in the directory path
+        if not files: continue
+
+        for file in files:
+            # truncate current working directory path to get relative path
+            file = str(file).replace(str(Path.cwd()), '')
+            # put all the sub directories directly in the S3 bucket, not inside OUTPUT_DIRECTORY folder
+            awsPath = file.replace(f'{OUTPUT_DIRECTORY}{os.sep}', '')
+            # for Windows machines convert windows path to UNIX path
+            if os.name == 'nt': awsPath = str(PurePosixPath(PureWindowsPath(awsPath)))
+
+            try:
+                s3_client.upload_file(file, AWS_S3_BUCKET, awsPath)
+            except ClientError as e:
+                print(e)
 
 if __name__ == '__main__':
     start = time()
 
-    config = read_config('config.toml')
+    config = read_config(CONFIG_FILE_NAME)
+    print('Exporting SQL data to parquet...')
     sqlToParquet(config)
 
-    print(f'It took {time()-start} secs.')
+    print('Uploading the parquet files to AWS S3...')
+    uploadDirToS3()
+
+    print(f'Done, it took a total of {time()-start} secs.')
 
 
