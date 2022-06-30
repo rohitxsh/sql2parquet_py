@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from time import time
 from typing import Dict
 import pandas as pd
-import boto3, glob, os, toml
+import boto3, glob, logging, os, sys, toml
 
 CONFIG_FILE_NAME = 'config.toml'
 OUTPUT_DIRECTORY = 'parquet'
@@ -23,14 +23,17 @@ def read_config(config_file_name: str) -> Dict[str, str]:
 
     Raises:
         FileNotFoundError: If `config_file` doesn't exist
+        Exception: Any exception encountered except FileNotFoundError during reading TOML config.
     '''
 
     try:
         return toml.load(open(config_file_name))
     except FileNotFoundError:
-        print(f'"{config_file_name}" file doesn\'t exist!')
+        logging.error(f'"{config_file_name}" file doesn\'t exist!')
+        sys.exit(f'"{config_file_name}" file doesn\'t exist!')
     except Exception as e:
-        print(e)
+        logging.error(e)
+        sys.exit(e)
 
 def sqlToParquet(config: Dict[str, str]) -> None:
     '''
@@ -86,18 +89,19 @@ def uploadDirToS3() -> None:
             try:
                 s3_client.upload_file(file, AWS_S3_BUCKET, awsPath)
             except ClientError as e:
-                print(e)
+                logging.error(e)
 
 if __name__ == '__main__':
     start = time()
 
+    logging.basicConfig(filename="log.txt", level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s')
     config = read_config(CONFIG_FILE_NAME)
-    print('Exporting SQL data to parquet...')
+    logging.info('Exporting SQL data to parquet...')
     sqlToParquet(config)
 
-    print('Uploading the parquet files to AWS S3...')
+    logging.info('Uploading the parquet files to AWS S3...')
     uploadDirToS3()
 
-    print(f'Done, it took a total of {time()-start} secs.')
+    logging.info(f'Done, it took a total of {time()-start} secs.')
 
 
