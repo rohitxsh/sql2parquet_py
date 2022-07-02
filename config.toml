@@ -11,7 +11,7 @@ species_name="mus_musculus"
 [[databases.tables]]
 table_name = "gene"
 query = '''
-SELECT distinct g.gene_id as gene_id, g.stable_id as gene_stable_id, g.version as gene_stable_id_version, sr.name as chr, g.seq_region_start as gene_start, g.seq_region_end as gene_end, g.biotype as gene_biotype, x.dbprimary_acc as gene_symbol_id, x.display_label as gene_symbol, ct.stable_id as canonical_transcript_stable_id, ct.version as canonical_transcript_stable_id_version, ct.biotype as canonical_transcript_biotype
+SELECT distinct g.gene_id as gene_id, g.stable_id as gene_stable_id, g.version as gene_stable_id_version, sr.name as gene_chr, g.seq_region_start as gene_start, g.seq_region_end as gene_end, g.biotype as gene_biotype, x.dbprimary_acc as gene_symbol_id, x.display_label as gene_symbol, ct.stable_id as canonical_transcript_stable_id, ct.version as canonical_transcript_stable_id_version, ct.biotype as canonical_transcript_biotype
 FROM gene g
 JOIN seq_region sr using (seq_region_id)
 JOIN coord_system cs using (coord_system_id)

@@ -3,6 +3,9 @@
 The python script - `code.py`  
 Dependency - `config.toml`
 
+Requires Python 3.x  
+Run the script via `py -m sql2parquet.sql2parquet`
+
 `config.toml` schema:
 ```
 [[databases]]

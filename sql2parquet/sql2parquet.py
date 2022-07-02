@@ -11,6 +11,10 @@ OUTPUT_DIRECTORY = 'parquet'
 FILE_EXT = '.parquet'
 AWS_S3_BUCKET = 'ensembl-genome-data-parquet'
 
+logging.basicConfig(filename="log.txt", level=logging.DEBUG, format='%(asctime)s %(levelname)s %(module)s %(name)s %(message)s')
+logger = logging.getLogger(__name__)
+
+
 def read_config(config_file_name: str) -> Dict[str, str]:
     '''
     Read TOML file containing the DB info
@@ -29,10 +33,10 @@ def read_config(config_file_name: str) -> Dict[str, str]:
     try:
         return toml.load(open(config_file_name))
     except FileNotFoundError:
-        logging.error(f'"{config_file_name}" file doesn\'t exist!')
-        sys.exit(f'"{config_file_name}" file doesn\'t exist!')
+        logger.error('%s file doesn\'t exist!', config_file_name)
+        sys.exit('%s file doesn\'t exist!', config_file_name)
     except Exception as e:
-        logging.error(e)
+        logger.error(e)
         sys.exit(e)
 
 def sqlToParquet(config: Dict[str, str]) -> None:
@@ -89,19 +93,18 @@ def uploadDirToS3() -> None:
             try:
                 s3_client.upload_file(file, AWS_S3_BUCKET, awsPath)
             except ClientError as e:
-                logging.error(e)
+                logger.error(e)
 
 if __name__ == '__main__':
     start = time()
 
-    logging.basicConfig(filename="log.txt", level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s')
     config = read_config(CONFIG_FILE_NAME)
-    logging.info('Exporting SQL data to parquet...')
+    logger.info('Exporting SQL data to parquet...')
     sqlToParquet(config)
 
-    logging.info('Uploading the parquet files to AWS S3...')
+    logger.info('Uploading the parquet files to AWS S3...')
     uploadDirToS3()
 
-    logging.info(f'Done, it took a total of {time()-start} secs.')
+    logger.info('Done, it took a total of %s sec(s).', (time()-start))
 
 
