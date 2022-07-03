@@ -56,6 +56,8 @@ def sqlToParquet(config: Dict[str, str]) -> None:
             engine = create_engine(db_connection_str)
 
             for table in database['tables']:
+                logger.info('Exporting %s table for %s...', table["table_name"], species["species_name"])
+
                 df = pd.read_sql(table['query'], con=engine, params={'species_name': species['species_name']})
 
                 if not os.path.exists(f'parquet{os.sep}data={table["table_name"]}'): os.mkdir(f'parquet{os.sep}data={table["table_name"]}')
