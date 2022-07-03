@@ -60,13 +60,14 @@ def sqlToParquet(config: Dict[str, str]) -> None:
 
                 df = pd.read_sql(table['query'], con=engine, params={'species_name': species['species_name']})
 
-                if not os.path.exists(f'parquet{os.sep}data={table["table_name"]}'): os.mkdir(f'parquet{os.sep}data={table["table_name"]}')
+                if not os.path.exists(os.path.join('parquet', f'data={table["table_name"]}')): os.mkdir(os.path.join('parquet', f'data={table["table_name"]}'))
 
-                full_directory_path = f'parquet{os.sep}data={table["table_name"]}{os.sep}species={species["species_name"]}'
+                full_directory_path = os.path.join('parquet', f'data={table["table_name"]}', f'species={species["species_name"]}')
                 if not os.path.exists(full_directory_path): os.mkdir(full_directory_path)
 
+                file_name = f'{species["db_name"]}-{table["table_name"]}{FILE_EXT}'
                 # default engine: pyarrow
-                df.to_parquet(f'{full_directory_path}{os.sep}{species["db_name"]}-{table["table_name"]}{FILE_EXT}')
+                df.to_parquet(os.path.join(full_directory_path, file_name))
 
 def uploadDirToS3() -> None:
     '''
@@ -86,11 +87,11 @@ def uploadDirToS3() -> None:
 
         for file in files:
             # truncate current working directory path to get relative path
-            file = str(file).replace(str(Path.cwd()), '')
+            file = os.path.relpath(file, os.getcwd())
             # put all the sub directories directly in the S3 bucket, not inside OUTPUT_DIRECTORY folder
-            awsPath = file.replace(f'{OUTPUT_DIRECTORY}{os.sep}', '')
+            awsPath = file.replace(os.path.join(OUTPUT_DIRECTORY,''), '')
             # for Windows machines convert windows path to UNIX path
-            if os.name == 'nt': awsPath = str(PurePosixPath(PureWindowsPath(awsPath)))
+            if os.name == 'nt': awsPath = str(Path(awsPath).as_posix())
 
             try:
                 s3_client.upload_file(file, AWS_S3_BUCKET, awsPath)
