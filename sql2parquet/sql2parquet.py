@@ -103,10 +103,17 @@ if __name__ == '__main__':
 
     config = read_config(CONFIG_FILE_NAME)
     logger.info('Exporting SQL data to parquet...')
-    sqlToParquet(config)
+    try:
+        sqlToParquet(config)
+    except Exception as e:
+        logger.error(e)
+        sys.exit(e)
 
     logger.info('Uploading the parquet files to AWS S3...')
-    uploadDirToS3()
+    try:
+        uploadDirToS3()
+    except Exception as e:
+        logger.error(e)
 
     logger.info('Done, it took a total of %s sec(s).', (time()-start))
 
