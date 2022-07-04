@@ -118,9 +118,6 @@ if __name__ == '__main__':
     logger.info('Uploading the parquet files to AWS S3...')
     try:
         uploadDirToS3()
+        logger.info('Done, it took a total of %s sec(s).', (time()-start))
     except Exception as e:
         logger.error(e)
-
-    logger.info('Done, it took a total of %s sec(s).', (time()-start))
-
-
