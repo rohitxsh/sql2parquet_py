@@ -1,9 +1,18 @@
 # Python script to move data from SQL to parquet files | GSoC '22
 
-The python script - `code.py`
-Dependency - `config.toml`
+Requires Python 3.x  
+Run the script via  
+- Cmd. line:
+1. Setup your AWS keys as explained here: https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html#configuration (config. location path: ~/.aws/)
+2. Run the script via `py -m sql2parquet.sql2parquet`
+- `Dockerfile`:
+1. Update your AWS keys in `.aws/credentials`
+2. Build the image from the dockerfile via `docker build --tag sql2parquet .`
+3. Run the container via `docker run sql2parquet`
 
-`config.toml`
+---
+
+`config.toml` schema:
 ```
 [[databases]]
 location = "string, DB server address"
