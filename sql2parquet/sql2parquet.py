@@ -1,5 +1,5 @@
-from botocore.exceptions import ClientError
-from pathlib import Path, PureWindowsPath, PurePosixPath
+from botocore.exceptions import ClientError, NoCredentialsError
+from pathlib import Path
 from sqlalchemy import create_engine
 from time import time
 from typing import Dict
@@ -60,9 +60,9 @@ def sqlToParquet(config: Dict[str, str]) -> None:
 
                 df = pd.read_sql(table['query'], con=engine, params={'species_name': species['species_name']})
 
-                if not os.path.exists(os.path.join('parquet', f'data={table["table_name"]}')): os.mkdir(os.path.join('parquet', f'data={table["table_name"]}'))
+                if not os.path.exists(os.path.join(OUTPUT_DIRECTORY, f'data={table["table_name"]}')): os.mkdir(os.path.join(OUTPUT_DIRECTORY, f'data={table["table_name"]}'))
 
-                full_directory_path = os.path.join('parquet', f'data={table["table_name"]}', f'species={species["species_name"]}')
+                full_directory_path = os.path.join(OUTPUT_DIRECTORY, f'data={table["table_name"]}', f'species={species["species_name"]}')
                 if not os.path.exists(full_directory_path): os.mkdir(full_directory_path)
 
                 file_name = f'{species["db_name"]}-{table["table_name"]}{FILE_EXT}'
@@ -97,17 +97,23 @@ def uploadDirToS3() -> None:
                 s3_client.upload_file(file, AWS_S3_BUCKET, awsPath)
             except ClientError as e:
                 logger.error(e)
+            except NoCredentialsError as e:
+                logger.error(e)
+                sys.exit("ERROR: AWS credentials not found, please refer to readme on how to setup AWS configuration")
+            except Exception as e:
+                logger.error(e)
+                sys.exit(e)
 
 if __name__ == '__main__':
     start = time()
 
     config = read_config(CONFIG_FILE_NAME)
     logger.info('Exporting SQL data to parquet...')
-    try:
-        sqlToParquet(config)
-    except Exception as e:
-        logger.error(e)
-        sys.exit(e)
+    # try:
+    #     sqlToParquet(config)
+    # except Exception as e:
+    #     logger.error(e)
+    #     sys.exit(e)
 
     logger.info('Uploading the parquet files to AWS S3...')
     try:
