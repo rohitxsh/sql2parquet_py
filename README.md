@@ -4,7 +4,7 @@ Recommended: Python 3.9.x
 Run the script via  
 - `Command line`:
 1. Setup your AWS keys as explained here: https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html#configuration (config. location path: `~/.aws/` [`~` -> Root directory])
-2. Run the script via `py -m sql2parquet.sql2parquet`
+2. Run the script via `python3 -m sql2parquet.main`
 - `Dockerfile`:
 1. Update your AWS keys in `.aws/credentials` [`.aws` directory should be in same directory as the `Dockerfile`]
 2. Build the image from the dockerfile via `docker build --tag sql2parquet .`

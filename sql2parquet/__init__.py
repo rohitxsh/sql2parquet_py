@@ -1,1 +1,1 @@
-name = 'sql2parquet'
+name = 'main'
