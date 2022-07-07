@@ -1,6 +1,6 @@
 # Python script to move data from SQL to parquet files | GSoC '22
 
-Requires Python 3.x  
+Recommended: Python 3.9.x  
 Run the script via  
 - `Command line`:
 1. Setup your AWS keys as explained here: https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html#configuration (config. location path: `~/.aws/` [`~` -> Root directory])
