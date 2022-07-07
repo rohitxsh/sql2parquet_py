@@ -2,11 +2,11 @@
 
 Requires Python 3.x  
 Run the script via  
-- Cmd. line:
-1. Setup your AWS keys as explained here: https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html#configuration (config. location path: ~/.aws/)
+- `Command line`:
+1. Setup your AWS keys as explained here: https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html#configuration (config. location path: `~/.aws/` [`~` -> Root directory])
 2. Run the script via `py -m sql2parquet.sql2parquet`
 - `Dockerfile`:
-1. Update your AWS keys in `.aws/credentials`
+1. Update your AWS keys in `.aws/credentials` [`.aws` directory should be in same directory as the `Dockerfile`]
 2. Build the image from the dockerfile via `docker build --tag sql2parquet .`
 3. Run the container via `docker run sql2parquet`
 
@@ -30,3 +30,16 @@ milti-line string, SQL query to construct the table, variables can we used that 
 
 Supported DB: MySQL  
 Engine: PyMySQL
+
+---
+
+`.aws` configuration files content for reference:
+
+`config`  
+[default]  
+region=eu-west-2
+
+`credentials`  
+[default]  
+aws_access_key_id = YOUR_ACCESS_KEY  
+aws_secret_access_key = YOUR_SECRET_KEY
