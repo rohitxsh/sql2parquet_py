@@ -60,9 +60,9 @@ def sqlToParquet(config: Dict[str, str]) -> None:
 
                 df = pd.read_sql(table['query'], con=engine, params={'species_name': species['species_name']})
 
-                if not os.path.exists(os.path.join(OUTPUT_DIRECTORY, f'data={table["table_name"]}')): os.mkdir(os.path.join(OUTPUT_DIRECTORY, f'data={table["table_name"]}'))
+                if not os.path.exists(os.path.join(OUTPUT_DIRECTORY, table["table_name"])): os.mkdir(os.path.join(OUTPUT_DIRECTORY, table["table_name"]))
 
-                full_directory_path = os.path.join(OUTPUT_DIRECTORY, f'data={table["table_name"]}', f'species={species["species_name"]}')
+                full_directory_path = os.path.join(OUTPUT_DIRECTORY, table["table_name"], f'species={species["species_name"]}')
                 if not os.path.exists(full_directory_path): os.mkdir(full_directory_path)
 
                 file_name = f'{species["db_name"]}-{table["table_name"]}{FILE_EXT}'
