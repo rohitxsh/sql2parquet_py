@@ -8,7 +8,7 @@ Run the script via
 - `Dockerfile`:
 1. Update your AWS keys in `.aws/credentials` [`.aws` directory should be in same directory as the `Dockerfile`]
 2. Build the image from the dockerfile via `docker build --tag sql2parquet .`
-3. Run the container via `docker run sql2parquet`
+3. Run the container via `docker run -d --name sql2parquet sql2parquet`
 
 ---
 
