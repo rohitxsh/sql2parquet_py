@@ -1,3 +1,5 @@
+**Project report: https://github.com/rohitxsh/ensembl_lakehouse_ui/blob/main/README.md**
+
 # Python script to move data from SQL to parquet files | GSoC '22
 
 Recommended: Python 3.9.x  
